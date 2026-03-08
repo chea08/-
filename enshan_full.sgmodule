@@ -1,0 +1,9 @@
+#!name=恩山论坛签到
+#!desc=自动抓取 Cookie 并每日签到
+#!system=ios
+
+[Script]
+恩山论坛签到 = type=cron,cronexp=0 8 * * *,wake-system=1,timeout=30,script-path=https://raw.githubusercontent.com/chea08/-/main/enshan_checkin.js
+
+[URL Rewrite]
+^https?:\/\/www\.right\.com\.cn\/forum\/(forum\.php|erling_qd-sign_in\.html|home\.php\?mod=space.*)$ script-response-body https://raw.githubusercontent.com/chea08/-/main/enshan_cookie_capture_surge.js
