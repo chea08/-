@@ -1,7 +1,9 @@
 /* 恩山论坛签到增强调试版 - Surge/Loon/QuanX 兼容 */
 const COOKIE_KEY = 'enshan_forum_cookie';
 const base = 'https://www.right.com.cn/forum';
-const ua = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
+const forumUrl = `${base}/forum.php?mobile=no`;
+const signPageUrl = `${base}/erling_qd-sign_in.html?mobile=no`;
+const ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15';
 
 function notify(subtitle, msg) {
   if (typeof $notification !== 'undefined') {
@@ -73,10 +75,10 @@ if (!cookie) {
       'User-Agent': ua,
       'Cookie': cookie,
       'Accept-Language': 'zh-CN,zh-Hans;q=0.9',
-      'Referer': `${base}/forum.php`
+      'Referer': forumUrl
     };
 
-    const home = await get({ url: `${base}/forum.php`, headers });
+    const home = await get({ url: forumUrl, headers });
     const homeStatus = home.resp && (home.resp.status || home.resp.statusCode || home.resp.statusCode);
     const homeHtml = home.data || '';
     const title = clean(match(/<title>([\s\S]*?)<\/title>/i, homeHtml), 80);
@@ -108,7 +110,7 @@ if (!cookie) {
         ...headers,
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
         'Origin': base,
-        'Referer': `${base}/erling_qd-sign_in.html`
+        'Referer': signPageUrl
       },
       body: `formhash=${encodeURIComponent(formhash)}`
     });
@@ -116,7 +118,7 @@ if (!cookie) {
     const signStatus = sign.resp && (sign.resp.status || sign.resp.statusCode || sign.resp.statusCode);
     const signText = clean(sign.data, 260);
 
-    const profile = await get({ url: `${base}/home.php?mod=space&uid=${uid}&do=profile&mycenter=1`, headers });
+    const profile = await get({ url: `${base}/home.php?mod=space&uid=${uid}&do=profile&mycenter=1&mobile=no`, headers: { ...headers, 'Referer': forumUrl } });
     const profileStatus = profile.resp && (profile.resp.status || profile.resp.statusCode || profile.resp.statusCode);
     const profileHtml = profile.data || '';
 
