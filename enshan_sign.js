@@ -232,12 +232,26 @@ function mergeSetCookieToCookie(baseCookies, setCookieHeader) {
   return cookies;
 }
 
+// ======= formhash 提取（增强版）=======
+
 function extractFormhash(html) {
-  const re =
-    /member\.php\?mod=logging(?:&amp;|&)action=logout(?:&amp;|&)formhash=([0-9a-fA-F]+)/;
-  const m = html.match(re);
-  if (!m) return null;
-  return m[1];
+  // 1. 优先从隐藏表单字段取：name="formhash" value="xxxx"
+  let m = html.match(
+    /name=["']formhash["']\s+value=["']([0-9a-fA-F]{8,32})["']/i,
+  );
+  if (m) return m[1];
+
+  // 2. 从登出链接里取：logout&formhash=xxxx
+  m = html.match(
+    /member\.php\?mod=logging(?:&amp;|&)action=logout[^"'<>]*?(?:&amp;|&)formhash=([0-9a-fA-F]{8,32})/i,
+  );
+  if (m) return m[1];
+
+  // 3. 兜底：任意出现 formhash=xxxx 的地方
+  m = html.match(/formhash=([0-9a-fA-F]{8,32})/i);
+  if (m) return m[1];
+
+  return null;
 }
 
 // ======= 头部构造 =======
