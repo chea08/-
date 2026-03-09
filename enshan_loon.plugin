@@ -1,0 +1,14 @@
+#!name=恩山论坛签到（Loon）
+#!desc=自动抓取 Cookie 并每日签到（强制桌面版页面）
+#!author=Minis
+#!homepage=https://github.com/yourname/enshan-surge
+
+[Script]
+# 打开恩山论坛页面时自动抓 Cookie（需先登录，MITM 必开）
+http-request ^https?:\/\/www\.right\.com\.cn\/forum\/(forum\.php|erling_qd-sign_in\.html|home\.php\?mod=space.*)$ script-path=https://raw.githubusercontent.com/chea08/-/main/enshan_cookie_capture_qx.js, tag=恩山Cookie获取, timeout=10
+
+# 每天 08:00 自动签到（用桌面 UA，强制 ?mobile=no）
+cron "0 8 * * *" script-path=https://raw.githubusercontent.com/chea08/-/main/enshan_checkin_compatible.js, tag=恩山签到, timeout=30
+
+[MITM]
+hostname = www.right.com.cn
