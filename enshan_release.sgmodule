@@ -10,7 +10,7 @@
 恩山论坛Cookie获取 = type=http-request,pattern=^https?:\/\/www\.right\.com\.cn\/forum\/(forum\.php|erling_qd-sign_in\.html|home\.php\?mod=space.*)$,requires-body=0,script-path=https://raw.githubusercontent.com/chea08/-/main/enshan_cookie_capture_qx.js,timeout=10
 
 # 每天上午 8 点自动签到
-恩山论坛签到 = type=cron,cronexp=0 8 * * *,wake-system=1,timeout=30,script-path=https://raw.githubusercontent.com/chea08/-/main/enshan_checkin_debug.js
+恩山论坛签到 = type=cron,cronexp=0 8 * * *,wake-system=1,timeout=30,script-path=https://raw.githubusercontent.com/chea08/-/main/enshan_checkin_debug_plus.js
 
 [MITM]
 hostname = %APPEND% www.right.com.cn
