@@ -1,0 +1,12 @@
+#!name=恩山论坛签到
+#!desc=恩山论坛获取 Cookie + 自动签到（支持 WAF）
+
+[Script]
+# 访问论坛时自动抓取 Cookie，保存到 enshan_cookie
+恩山-获取Cookie = type=http-request,pattern=^https:\/\/www\.right\.com\.cn\/forum\/,requires-body=0,timeout=10,script-path=https://raw.githubusercontent.com/chea08/-/main/enshan_get_cookie.js
+
+# 每天 8:00 自动签到（根据你需要改 cronexp）
+恩山-签到 = type=cron,cronexp=0 8 * * *,wake-system=1,timeout=600,script-path=https://raw.githubusercontent.com/chea08/-/main/enshan_sign.js
+
+[MITM]
+hostname = %APPEND% www.right.com.cn
