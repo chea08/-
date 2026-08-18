@@ -28,11 +28,21 @@ function http(method, options) {
 function cap(re, s) { const m = (s || '').match(re); return m ? m[1] : ''; }
 function plain(s) { return (s || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim(); }
 function status(r) { return r.status || r.statusCode || ''; }
-function explicitSigned(s) {
-  return /今天已签到|今日已签到|已经签到|已签到|签到成功|恭喜.*签到|successfully/i.test(plain(s));
+function text(s) { return plain(s).slice(0, 260); }
+function parseJSON(s) { try { return JSON.parse(s); } catch (_) { return null; } }
+function apiSuccess(s) {
+  const data = parseJSON(s);
+  if (!data) return false;
+  const msg = JSON.stringify(data);
+  return !/(失败|错误|未登录|权限|验证码)/.test(msg) && /(签到成功|已经签到|已签到|success)/i.test(msg);
 }
-function explicitUnsigned(s) {
-  return /您今天还没有签到|今日未签到|点击签到|立即签到|签到按钮|签到领奖/i.test(plain(s));
+function signedButton(s) {
+  return /id=["']signin-btn["'][^>]*>[\s\S]{0,80}?(已签到|今日已签到|已经签到)/i.test(s)
+    || /class=["'][^"']*(?:signed|signin)[^"']*["'][^>]*>[\s\S]{0,80}?(已签到|今日已签到|已经签到)/i.test(s);
+}
+function unsignedButton(s) {
+  return /id=["']signin-btn["'][^>]*>[\s\S]{0,80}?(签到|立即签到)/i.test(s)
+    && !signedButton(s);
 }
 
 const cookie = (typeof $argument !== 'undefined' && $argument ? $argument.trim() : '') || storeRead(COOKIE_KEY).trim();
@@ -62,12 +72,12 @@ else (async () => {
         const after = await http('get', {url: signPageUrl, headers});
         const signBody = plain(sign.d);
         const afterBody = plain(after.d);
-        const verified = explicitSigned(sign.d) || explicitSigned(after.d);
-        const stillUnsigned = explicitUnsigned(after.d) && !verified;
+        const verified = apiSuccess(sign.d) || signedButton(after.d);
+        const stillUnsigned = unsignedButton(after.d);
         const user = plain(cap(/<h2[^>]*>\s*([^<]+)/i, after.d)) || '未知';
         const coins = cap(/恩山币<\/em>\s*(\d+)/i, after.d) || '未知';
-        if (verified && !stillUnsigned) finish('签到成功（已验证）', `用户：${user}\n恩山币：${coins}\n接口状态：${status(sign.r)}\n返回：${signBody.slice(0,180)}`);
-        else finish('签到未确认', `POST状态：${status(sign.r)}\n提交返回：${signBody.slice(0,220) || '空'}\n复查状态：${status(after.r)}\n复查仍未签到：${stillUnsigned ? '是' : '否'}\n复查页面：${afterBody.slice(0,220)}`);
+        if (verified && !stillUnsigned) finish('签到成功（已验证）', `用户：${user}\n恩山币：${coins}\n接口状态：${status(sign.r)}\n返回：${text(sign.d)}`);
+        else finish('签到未确认', `POST状态：${status(sign.r)}\n提交返回：${text(sign.d)}\n复查状态：${status(after.r)}\n签到按钮已完成：${signedButton(after.d) ? '是' : '否'}\n复查仍可签到：${stillUnsigned ? '是' : '否'}\n复查页面：${text(after.d)}`);
       }
     }
   } catch (e) { finish('脚本异常', `${e.message || e}`); }
